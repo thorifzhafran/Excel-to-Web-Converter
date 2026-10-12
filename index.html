@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Muhammad Tharif Zhafran Aziz (Thorif Zhafran)">
+    <meta name="publisher" content="Webinesia">
+    <title>Universal Data Table Viewer</title>
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+        "@type": "Person",
+        "@id": "https://thorifzhafran.com/",
+        "name": "Muhammad Tharif Zhafran Aziz",
+        "alternateName": ["Zhafran", "Thorif"],
+        "jobTitle": "Freelance Web Designer & Developer",
+        "worksFor": {
+            "@id": "https://webinesia.com/"
+        },
+        "url": "https://webinesia.com",
+        "sameAs": [
+            "https://github.com/thorifzhafran/",
+            "https://www.linkedin.com/in/thorifzhafran"
+        ]
+        },
+        {
+        "@type": "Organization",
+        "@id": "https://webinesia.com/",
+        "name": "Webinesia",
+        "url": "https://webinesia.com",
+        "founder": {
+            "@id": "https://thorifzhafran.com/"
+        },
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "email": "hello@webinesia.com"
+        }
+        },
+        {
+        "@type": "WebSite",
+        "@id": "https://webinesia.com/",
+        "url": "https://webinesia.com",
+        "name": "Webinesia",
+        "publisher": {
+            "@id": "https://webinesia.com/"
+        },
+        "author": {
+            "@id": "https://webinesia.com/"
+        }
+        }
+    ]
+    }
+    </script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#f4f4f5', 500: '#71717a', 600: '#27272a', 700: '#18181b' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .sync-scroll::-webkit-scrollbar {
+            height: 10px;
+            width: 10px;
+        }
+        .sync-scroll::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+        .dark .sync-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .sync-scroll::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        .dark .sync-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .sync-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+        .dark .sync-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-black text-slate-900 dark:text-zinc-100 min-h-screen transition-colors duration-200">
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header & Controls -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">Universal Data Viewer</h1>
+                <p class="text-sm text-slate-500 dark:text-zinc-400">Upload any CSV/Excel file or paste raw text. Choose your separator instantly.</p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <label class="cursor-pointer bg-black dark:bg-zinc-800 hover:bg-zinc-800 dark:hover:bg-zinc-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition flex items-center gap-2 border border-transparent dark:border-zinc-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    Upload CSV / Text
+                    <input type="file" id="dataFile" accept=".csv,.txt" class="hidden" onchange="handleFileUpload(event)">
+                </label>
+
+                <button onclick="toggleDarkMode()" class="p-2 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 transition" title="Toggle Theme">
+                    <svg id="sunIcon" class="w-5 h-5 hidden dark:block text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg id="moonIcon" class="w-5 h-5 block dark:hidden text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Toolbar: Separator Selector & Search -->
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-4">
+            <!-- Separator Controls -->
+            <div class="flex flex-wrap items-center gap-2 bg-white dark:bg-zinc-900 p-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm">
+                <span class="text-xs font-semibold text-slate-500 dark:text-zinc-400 px-1">Separator:</span>
+                <button onclick="setSeparator(',')" class="sep-btn px-2.5 py-1 text-xs font-medium rounded bg-slate-900 text-white dark:bg-zinc-800 dark:text-zinc-100 transition" data-sep=",">Comma (,)</button>
+                <button onclick="setSeparator(';')" class="sep-btn px-2.5 py-1 text-xs font-medium rounded hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 transition" data-sep=";">Semicolon (;)</button>
+                <button onclick="setSeparator('\t')" class="sep-btn px-2.5 py-1 text-xs font-medium rounded hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 transition" data-sep="\t">Tab</button>
+                <button onclick="setSeparator('|')" class="sep-btn px-2.5 py-1 text-xs font-medium rounded hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 transition" data-sep="|">Pipe (|)</button>
+                <input type="text" id="customSep" placeholder="Custom" maxlength="3" oninput="setCustomSeparator(this.value)" class="w-16 px-2 py-1 text-xs border border-slate-200 dark:border-zinc-800 rounded bg-slate-50 dark:bg-zinc-950 text-center focus:outline-none">
+            </div>
+
+            <!-- Search Bar -->
+            <div>
+                <input type="text" id="searchInput" placeholder="Search across all columns..." onkeyup="filterTable()" class="w-full md:w-72 px-4 py-2 text-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-600 shadow-sm">
+            </div>
+        </div>
+
+        <!-- Card Wrapper -->
+        <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
+            <!-- TOP HORIZONTAL SCROLLBAR MIRROR -->
+            <div id="topScrollWrapper" class="sync-scroll overflow-x-auto border-b border-slate-200 dark:border-zinc-800 bg-slate-100 dark:bg-zinc-950/60" onscroll="syncScroll('top')">
+                <div id="topScrollDummy" class="h-3"></div>
+            </div>
+
+            <!-- TABLE CONTAINER -->
+            <div id="tableContainer" class="sync-scroll overflow-x-auto max-h-[600px]" onscroll="syncScroll('bottom')">
+                <table id="dynamicTable" class="w-full text-left border-collapse text-sm whitespace-nowrap">
+                    <thead id="tableHead" class="bg-slate-100 dark:bg-zinc-800 sticky top-0 z-10 text-slate-700 dark:text-zinc-200"></thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-200 dark:divide-zinc-800/80"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs px-4 py-2.5 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none z-50">
+        Copied to clipboard!
+    </div>
+
+    <script>
+        let rawTextData = `ID,Name,Category,Email,Status,Country,Date Joined
+#101,Sarah Jenkins,Enterprise,sarah.j@example.com,Active,United States,2026-01-15
+#102,Liam Vance,Standard,liam.v@example.com,Pending,Canada,2026-02-10
+#103,Aisha Rahman,Enterprise,aisha.r@example.com,Active,Singapore,2026-03-01
+#104,Mateo Silva,Standard,mateo.s@example.com,Inactive,Brazil,2026-03-22`;
+
+        let currentSeparator = ',';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            parseAndRender();
+        });
+
+        function setSeparator(sep) {
+            currentSeparator = sep;
+            document.querySelectorAll('.sep-btn').forEach(btn => {
+                if (btn.getAttribute('data-sep') === sep) {
+                    btn.className = "sep-btn px-2.5 py-1 text-xs font-medium rounded bg-slate-900 text-white dark:bg-zinc-800 dark:text-zinc-100 transition";
+                } else {
+                    btn.className = "sep-btn px-2.5 py-1 text-xs font-medium rounded hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 transition";
+                }
+            });
+            document.getElementById('customSep').value = '';
+            parseAndRender();
+        }
+
+        function setCustomSeparator(val) {
+            if (!val) return;
+            currentSeparator = val;
+            document.querySelectorAll('.sep-btn').forEach(btn => {
+                btn.className = "sep-btn px-2.5 py-1 text-xs font-medium rounded hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 transition";
+            });
+            parseAndRender();
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                rawTextData = e.target.result;
+                parseAndRender();
+            };
+            reader.readAsText(file);
+        }
+
+        function parseAndRender() {
+            let lines = rawTextData.split(/\r?\n/);
+            let result = [];
+            for (let line of lines) {
+                if (!line.trim()) continue;
+                let row = [];
+                let inQuote = false;
+                let current = '';
+                for (let i = 0; i < line.length; i++) {
+                    let char = line[i];
+                    if (char === '"') {
+                        inQuote = !inQuote;
+                    } else if (line.substr(i, currentSeparator.length) === currentSeparator && !inQuote) {
+                        row.push(current.trim());
+                        current = '';
+                        i += currentSeparator.length - 1;
+                    } else {
+                        current += char;
+                    }
+                }
+                row.push(current.trim());
+                result.push(row);
+            }
+            renderTable(result);
+        }
+
+        function renderTable(data) {
+            if (!data || data.length === 0) return;
+            const headers = data[0];
+            const rows = data.slice(1);
+
+            const thead = document.getElementById('tableHead');
+            const tbody = document.getElementById('tableBody');
+
+            let headHtml = `<tr>
+                <th class="p-3.5 font-semibold text-center w-12 border-r border-slate-200 dark:border-zinc-800">#</th>`;
+            headers.forEach((h, colIndex) => {
+                headHtml += `
+                    <th class="p-3.5 font-semibold border-r border-slate-200 dark:border-zinc-800 last:border-none">
+                        <div class="flex items-center justify-between gap-3">
+                            <span>${h}</span>
+                            <button onclick="copyColumn(${colIndex})" class="text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-zinc-100 transition p-1 rounded" title="Copy Column">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                            </button>
+                        </div>
+                    </th>`;
+            });
+            headHtml += `<th class="p-3.5 font-semibold text-center">Row Actions</th></tr>`;
+            thead.innerHTML = headHtml;
+
+            let bodyHtml = '';
+            rows.forEach((row, rowIndex) => {
+                bodyHtml += `<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/40 transition">
+                    <td class="p-3.5 text-center text-xs text-slate-400 dark:text-zinc-500 border-r border-slate-200 dark:border-zinc-800">${rowIndex + 1}</td>`;
+                
+                row.forEach((cell) => {
+                    bodyHtml += `
+                        <td class="p-3.5 border-r border-slate-200 dark:border-zinc-800 last:border-none relative">
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="truncate max-w-xs">${cell}</span>
+                                <button onclick="copyText('${escapeHtml(cell)}')" class="text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-zinc-100 transition p-1" title="Copy Cell">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                </button>
+                            </div>
+                        </td>`;
+                });
+
+                const fullRowStr = row.join(' | ');
+                bodyHtml += `
+                    <td class="p-3.5 text-center">
+                        <button onclick="copyText('${escapeHtml(fullRowStr)}')" class="text-xs bg-slate-100 dark:bg-zinc-800 hover:bg-black dark:hover:bg-zinc-700 hover:text-white px-2.5 py-1.5 rounded transition font-medium shadow-sm">
+                            Copy Row
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = bodyHtml;
+
+            setTimeout(updateScrollDummyWidth, 50);
+        }
+
+        let isSyncing = false;
+        function syncScroll(source) {
+            const topDiv = document.getElementById('topScrollWrapper');
+            const bottomDiv = document.getElementById('tableContainer');
+            if (isSyncing) return;
+            isSyncing = true;
+            if (source === 'top') {
+                bottomDiv.scrollLeft = topDiv.scrollLeft;
+            } else {
+                topDiv.scrollLeft = bottomDiv.scrollLeft;
+            }
+            isSyncing = false;
+        }
+
+        function updateScrollDummyWidth() {
+            const table = document.getElementById('dynamicTable');
+            const topDummy = document.getElementById('topScrollDummy');
+            topDummy.style.width = table.offsetWidth + 'px';
+        }
+
+        function copyColumn(colIndex) {
+            const rows = document.querySelectorAll('#dynamicTable tbody tr');
+            let colData = [];
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells[colIndex + 1]) {
+                    const span = cells[colIndex + 1].querySelector('span');
+                    if (span) colData.push(span.innerText);
+                }
+            });
+            copyText(colData.join('\n'));
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast();
+            });
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.style.opacity = '1';
+            setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+        }
+
+        function filterTable() {
+            let input = document.getElementById('searchInput').value.toLowerCase();
+            let rows = document.querySelectorAll('#tableBody tr');
+            rows.forEach(row => {
+                let text = row.innerText.toLowerCase();
+                row.style.display = text.includes(input) ? '' : 'none';
+            });
+        }
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+            } else {
+                html.classList.add('dark');
+            }
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>
