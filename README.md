@@ -2,6 +2,8 @@
 
 A blazing-fast, lightweight, single-file client-side application designed to instantly parse, view, filter, and interact with tabular data (CSV, tab-delimited files, custom-separated text) directly in your browser.
 
+[![Try Here](https://img.shields.io/badge/🚀_Try_Here-Live_Demo-000000?style=for-the-badge&logo=github)](https://thorifzhafran.github.io/Excel-to-Web-Converter/)
+
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?logo=tailwind-css&logoColor=white)
